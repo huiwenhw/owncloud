@@ -11,21 +11,21 @@
 					<li style="background-image:url('<?php echo OCP\image_path('core','actions/public.png') ?>')" data-type='web'><p><?php echo $l->t('From url');?></p></li>
 				</ul>
 			</div>
-			<div class="file_upload_wrapper svg">
+			<div class="file_upload_wrapper svg" data-step="1" data-intro="Click on the button here to upload a file!">
 				<form data-upload-id='1' class="file_upload_form" action="<?php echo OCP\Util::linkTo('files', 'ajax/upload.php'); ?>" method="post" enctype="multipart/form-data" target="file_upload_target_1">
 					<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $_['uploadMaxFilesize'] ?>" id="max_upload">
 					<input type="hidden" class="max_human_file_size" value="(max <?php echo $_['uploadMaxHumanFilesize']; ?>)">
 					<input type="hidden" name="dir" value="<?php echo htmlentities($_['dir'],ENT_COMPAT,'utf-8') ?>" id="dir">
 					<button class="file_upload_filename">&nbsp;<img class='svg action' alt="Upload" src="<?php echo OCP\image_path("core", "actions/upload-white.svg"); ?>" /></button>
 					<input class="file_upload_start" type="file" name='files[]'/>
-						<a href="#" class="file_upload_button_wrapper" onclick="return false;" title="<?php echo $l->t('Upload'); echo  ' max. '.$_['uploadMaxHumanFilesize'] ?>"></a>
+					<a href="#" class="file_upload_button_wrapper" onclick="return false;" title="<?php echo $l->t('Upload'); echo  ' max. '.$_['uploadMaxHumanFilesize'] ?>"></a>
 					<iframe name="file_upload_target_1" class='file_upload_target' src=""></iframe>
 				</form>
 			</div>
-					<div id="upload">
-						<div id="uploadprogressbar"></div>
-						<input type="button" class="stop" style="display:none" value="<?php echo $l->t('Cancel upload');?>" onclick="javascript:Files.cancelUploads();" />
-					</div>
+			<div id="upload">
+				<div id="uploadprogressbar"></div>
+				<input type="button" class="stop" style="display:none" value="<?php echo $l->t('Cancel upload');?>" onclick="javascript:Files.cancelUploads();" />
+			</div>
 
 		</div>
 		<div id="file_action_panel"></div>
@@ -46,7 +46,7 @@
 				<?php if(!isset($_['readonly']) || !$_['readonly']) { ?><input type="checkbox" id="select_all" /><?php } ?>
 				<span class='name'><?php echo $l->t( 'Name' ); ?></span>
 				<span class='selectedActions'>
-<!-- 					<a href="" class="share"><img class='svg' alt="Share" src="<?php echo OCP\image_path("core", "actions/share.svg"); ?>" /> <?php echo $l->t('Share')?></a> -->
+					<!-- 					<a href="" class="share"><img class='svg' alt="Share" src="<?php echo OCP\image_path("core", "actions/share.svg"); ?>" /> <?php echo $l->t('Share')?></a> -->
 					<?php if($_['allowZipDownload']) : ?>
 						<a href="" class="download"><img class='svg' alt="Download" src="<?php echo OCP\image_path("core", "actions/download.svg"); ?>" /> <?php echo $l->t('Download')?></a>
 					<?php endif; ?>
@@ -56,7 +56,7 @@
 			<th id="headerDate"><span id="modified"><?php echo $l->t( 'Modified' ); ?></span><span class="selectedActions"><a href="" class="delete"><?php echo $l->t('Delete all')?> <img class="svg" alt="<?php echo $l->t('Delete')?>" src="<?php echo OCP\image_path("core", "actions/delete.svg"); ?>" /></a></span></th>
 		</tr>
 	</thead>
-	<tbody id="fileList" data-readonly="<?php echo $_['readonly'];?>">
+	<tbody id="fileList" data-step="2" data-intro="Click on a file to edit it!" data-position="down" data-readonly="<?php echo $_['readonly'];?>">
 		<?php echo($_['fileList']); ?>
 	</tbody>
 </table>

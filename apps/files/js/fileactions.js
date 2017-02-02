@@ -59,7 +59,7 @@ FileActions={
 		if($('tr').filterAttr('data-file',file).data('renaming')){
 			return;
 		}
-		parent.children('a.name').append('<span class="fileactions" />');
+		parent.children('a.name').append('<span class="fileactions" id="sharebtn"/>');
 		var defaultAction=FileActions.getDefault(FileActions.getCurrentMimeType(),FileActions.getCurrentType());
 		for(name in actions){
 			// no rename and share action for the 'Shared' dir
@@ -69,7 +69,7 @@ FileActions={
 				if(img.call){
 					img=img(file);
 				}
-				var html='<a href="#" class="action" style="display:none">';
+				var html='<a href="#" id="test" class="action" style="display:none">';
 				if(img) { html+='<img src="'+img+'"/> '; }
 				html += name+'</a>';
 				var element=$(html);

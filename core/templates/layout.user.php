@@ -96,13 +96,13 @@
 	var modal = document.getElementById('introModal');
 	$( document ).ready(function() {
 		
-		files = $('#apps').children()[0]; 
-		if(files.textContent.includes("Files") && $('#apps li a:first').hasClass('active')) {
+		var checkli = $('#apps li:first')[0].textContent.replace(/\s/g, '');
+		if(checkli == "Files" && $('#apps li a:first').hasClass('active')) {
 			modal.style.display = "block";
 		}
 
 		$("#needassist").on( "click", function() {
-			var intro = introJs();
+			// Enabling fileactions on hover & adding attributes for introjs 
 			$('#fileList tr').mouseover();
 			$('#sharebtn').attr("data-step", "3");
 			$('#sharebtn').attr("data-intro", "Share a file by hovering over the file! More actions available.");
@@ -110,6 +110,9 @@
 			$('.delete').attr("data-step", "4");
 			$('.delete').attr("data-intro", "Delete a file by hovering over the file & clicking on this button!");
 			$('.delete').attr("data-position", "bottom-right-aligned");
+
+			// Starting tooltip guide & removing fileactions when done with guide 
+			var intro = introJs();
 			intro.setOption('showProgress', true).start();
 			intro.oncomplete(function() {
 				console.log('complete');
@@ -122,7 +125,7 @@
 		});
 	});
 
-	// Get the elements that closes the modal
+	// Get the elements that close the modal
 	var close = document.getElementsByClassName('closebtn');
 	$(".closebtn").on( "click", function() {
 		modal.style.display = "none";
@@ -138,7 +141,7 @@
 	var guidebtn = document.getElementById('guidebtn');
 	// When the user clicks the button, open the modal 
 	guidebtn.onclick = function() {
-		modal.style.display = "block";
+		$("#needassist").click();
 	}
 </script>
 </body>

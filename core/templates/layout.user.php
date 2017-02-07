@@ -7,6 +7,15 @@
 	<?php foreach($_['cssfiles'] as $cssfile): ?>
 		<link rel="stylesheet" href="<?php echo $cssfile; ?>" type="text/css" media="screen" />
 	<?php endforeach; ?>
+		<script type="text/javascript">
+		var oc_webroot = '<?php echo OC::$WEBROOT; ?>';
+		var oc_appswebroot = '<?php echo OC::$APPSWEBROOT; ?>';
+		var oc_current_user = '<?php echo OC_User::getUser() ?>';
+	</script>
+	<script type="text/javascript" src="/owncloud/core/js/intro.js"></script>
+	<?php foreach($_['jsfiles'] as $jsfile): ?>
+		<script type="text/javascript" src="<?php echo $jsfile; ?>"></script>
+	<?php endforeach; ?>
 	<link rel="stylesheet" href="/owncloud/core/css/introjs.css" type="text/css" media="screen" />
 	<?php foreach($_['headers'] as $header): ?>
 		<?php
@@ -68,80 +77,93 @@
 				<p>Hello, do you need assistance?</p>
 				<p>
 					<button class="closebtn" id="needassist">I need assistance!</button>
-					<button class="closebtn">Never show this in the future</button>
+					<button class="closebtn" id="closemodal_f">Never show this in the future</button>
 				</p>
 			</div>
-			<!--
-			<div class="modal-footer">
-				<div id="myProgress">
-					<div id="myBar"></div>
-				</div>
-			</div>
-		-->
+		</div>
 	</div>
-</div>
 
-<script type="text/javascript">
-	var oc_webroot = '<?php echo OC::$WEBROOT; ?>';
-	var oc_appswebroot = '<?php echo OC::$APPSWEBROOT; ?>';
-	var oc_current_user = '<?php echo OC_User::getUser() ?>';
-</script>
-<script type="text/javascript" src="/owncloud/core/js/intro.js"></script>
-<?php foreach($_['jsfiles'] as $jsfile): ?>
-	<script type="text/javascript" src="<?php echo $jsfile; ?>"></script>
-<?php endforeach; ?>
-
-<script type="text/javascript">
-	// Get the modal
+	<script type="text/javascript">
 	var modal = document.getElementById('introModal');
-	$( document ).ready(function() {
-		
-		var checkli = $('#apps li:first')[0].textContent.replace(/\s/g, '');
-		if(checkli == "Files" && $('#apps li a:first').hasClass('active')) {
-			modal.style.display = "block";
-		}
+	var checkli = $('#apps li:first')[0].textContent.replace(/\s/g, '');
 
+	$(document).ready(function() {
+		showmodal();
 		$("#needassist").on( "click", function() {
-			// Enabling fileactions on hover & adding attributes for introjs 
-			$('#fileList tr').mouseover();
-			$('#sharebtn').attr("data-step", "3");
-			$('#sharebtn').attr("data-intro", "Share a file by hovering over the file! More actions available.");
-			$('#sharebtn').attr("data-position", "bottom-middle-aligned");
-			$('.delete').attr("data-step", "4");
-			$('.delete').attr("data-intro", "Delete a file by hovering over the file & clicking on this button!");
-			$('.delete').attr("data-position", "bottom-right-aligned");
+			showguide(); 
+		});
 
-			// Starting tooltip guide & removing fileactions when done with guide 
-			var intro = introJs();
-			intro.setOption('showProgress', true).start();
-			intro.oncomplete(function() {
-				console.log('complete');
-				$('#fileList tr').mouseleave();
-			});
-			intro.onexit(function() {
-				console.log('exit');
-				$('#fileList tr').mouseleave();
-			});
+		closemodal();
+		$('#closemodal_f').on('click', function() {
+			closemodalforever();
+		});
+
+		// When the user clicks the button, open the modal 
+		$('#guidebtn').on('click', function() {
+			console.log('guide');
+			$("#needassist").click();
 		});
 	});
 
-	// Get the elements that close the modal
-	var close = document.getElementsByClassName('closebtn');
-	$(".closebtn").on( "click", function() {
-		modal.style.display = "none";
-	});
+	function showmodal() {
+		$.ajax({
+			url: OC.filePath('files','ajax','showpopup.php'),
+			data: "",
+			success: function(data) {
+				console.log(data);
+				if(checkli == "Files" && $('#apps li a:first').hasClass('active') && data == 1) {
+					modal.style.display = "block";
+				}
+			}
+		});
+	}
 
-	// When the user clicks anywhere outside of the modal, close it
-	window.onclick = function(event) {
-		if (event.target == modal) {
+	function showguide() {
+		// Enabling fileactions on hover & adding attributes for introjs 
+		$('#fileList tr').mouseover();
+		$('#sharebtn').attr("data-step", "3");
+		$('#sharebtn').attr("data-intro", "Share a file by hovering over the file! More actions available.");
+		$('#sharebtn').attr("data-position", "bottom-middle-aligned");
+		$('.delete').attr("data-step", "4");
+		$('.delete').attr("data-intro", "Delete a file by hovering over the file & clicking on this button!");
+		$('.delete').attr("data-position", "bottom-right-aligned");
+
+		// Starting tooltip guide & removing fileactions when done with guide 
+		var intro = introJs();
+		intro.setOption('showProgress', true).start();
+		intro.oncomplete(function() {
+			console.log('complete');
+			$('#fileList tr').mouseleave();
+		});
+		intro.onexit(function() {
+			console.log('exit');
+			$('#fileList tr').mouseleave();
+		});
+	}
+
+	function closemodal() {
+		// Get the elements that close the modal
+		$(".closebtn").on( "click", function() {
 			modal.style.display = "none";
+		});
+
+		// When the user clicks anywhere outside of the modal, close it
+		window.onclick = function(event) {
+			if (event.target == modal) {
+				modal.style.display = "none";
+			}
 		}
 	}
 
-	var guidebtn = document.getElementById('guidebtn');
-	// When the user clicks the button, open the modal 
-	guidebtn.onclick = function() {
-		$("#needassist").click();
+	function closemodal_f() {
+		$.ajax({
+			url: OC.filePath('files','ajax','setpopup.php'),
+			data: "",
+			success: function(data) {
+				console.log(data);
+			}
+		});
+		console.log('close modal forever');
 	}
 </script>
 </body>

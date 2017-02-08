@@ -1,3 +1,21 @@
+var Templates = {
+	inviteModal: function() {
+		return '\
+		<div id="inviteModal" class="inviteModalClass">\
+		<div class="modal-content">\
+		<div class="modal-header">\
+		<span class="close" id="closeinvitemodal">&times;</span>\
+		</div>\
+		<div class="modal-body">\
+		<p id="modal_append_user">Click on a user to invite them to comment!</p>\
+		<p><input id="submitinvite" type="submit" value="Invite"></input></p>\
+		</div>\
+		</div>\
+		</div>\
+		';
+	}
+}
+
 function setEditorSize(){
 	// Sets the size of the text editor window.
 	fillWindow($('#editor'));
@@ -29,7 +47,7 @@ function setSyntaxMode(ext){
 	filetype["jsm"] = "javascript";
 	filetype["json"] = "json";
 	filetype["latex"] = "latex";
-        filetype["less"] = "less";
+	filetype["less"] = "less";
 	filetype["ly"] = "latex";
 	filetype["ily"] = "latex";
 	filetype["lua"] = "lua";
@@ -48,7 +66,7 @@ function setSyntaxMode(ext){
 	filetype["scad"] = "scad"; // seems to be something like 3d model files printed with e.g. reprap
 	filetype["scala"] = "scala";
 	filetype["scss"] = "scss"; // "sassy css"
-        filetype["sh"] = "sh";
+	filetype["sh"] = "sh";
 	filetype["sql"] = "sql";
 	filetype["svg"] = "svg";
 	filetype["textile"] = "textile"; // related to markdown
@@ -71,7 +89,7 @@ function showControls(filename,writeperms){
 	if(writeperms=="true"){
 		editorbarhtml += '<button id="editor_save">'+t('files_texteditor','Save')+'</button><div class="separator"></div>';
 	}
-	editorbarhtml += '<label for="editorseachval">Search:</label><input type="text" name="editorsearchval" id="editorsearchval"><div class="separator"></div><button id="editor_close">'+t('files_texteditor','Close')+'</button></div>';
+	editorbarhtml += '<label for="editorseachval">Search:</label><input type="text" name="editorsearchval" id="editorsearchval"><div class="separator"></div><button id="editor_close">'+t('files_texteditor','Close')+'</button><button id="editor_comment">'+t('files_texteditor','Invite to Comment')+'</button></div>';
 	// Change breadcrumb classes
 	$('#controls .last').removeClass('last');
 	$('#controls').append(editorbarhtml);
@@ -81,9 +99,53 @@ function showControls(filename,writeperms){
 function bindControlEvents(){
 	$("#editor_save").die('click',doFileSave).live('click',doFileSave);
 	$('#editor_close').die('click',hideFileEditor).live('click',hideFileEditor);
+	$('#editor_comment').die('click',showInviteModal).live('click',showInviteModal);
 	$('#editorsearchval').die('keyup', doSearch).live('keyup', doSearch);
 	$('#clearsearchbtn').die('click', resetSearch).live('click', resetSearch);
 	$('#nextsearchbtn').die('click', nextSearchResult).live('click', nextSearchResult);
+}
+
+function addInviteModal() {
+	console.log("add invite modal");
+	var InviteModalHtml = $(Templates.inviteModal());
+	$('#controls').append(InviteModalHtml);
+
+	// To get users 
+	$.ajax({
+		url: OC.filePath('files_texteditor','ajax','getuser.php'),
+		data: "",
+		success: function(data) {
+			var users = JSON.parse(data);
+			console.log(users);
+
+			var currentuser = users[0];
+			for(var i=1 ; i<users.length ;i++) {
+				if(users[i] != currentuser) {
+					var template = '<p><input class="inviteusers" type="checkbox" name="inviteusers" value="' + users[i] + '">' + users[i] + '</input></p>';
+					$('#modal_append_user').append(template);
+				}
+			}
+		}
+	});
+}
+
+function showInviteModal() {
+	console.log("show invite modal");
+	var showInviteModal = document.getElementById("inviteModal");
+	showInviteModal.style.display = "block";
+
+	// Get the elements that close the modal
+	$("#closeinvitemodal").on( "click", function() {
+		showInviteModal.style.display = "none";
+	});
+
+	// When the user clicks anywhere outside of the modal, close it
+	window.onclick = function(event) {
+		if (event.target == showInviteModal) {
+			console.log("close");
+			showInviteModal.style.display = "none";
+		}
+	}
 }
 
 // returns true or false if the editor is in view or not
@@ -222,16 +284,24 @@ function showFileEditor(dir,filename){
 							}
 						});
 						// Add the ctrl+s event
-						window.aceEditor.commands.addCommand({							name: "save",							bindKey: {							win: "Ctrl-S",							mac: "Command-S",							sender: "editor"							},							exec: function(){
+						window.aceEditor.commands.addCommand({
+							name: "save",
+							bindKey: {
+								win: "Ctrl-S",
+								mac: "Command-S",
+								sender: "editor"
+							},
+							exec: function(){
 								doFileSave();	
-							}						});
+							}
+						});
 					});
 				} else {
 					// Failed to get the file.
 					OC.dialogs.alert(result.data.message, t('files_texteditor','An error occurred!'));
 				}
 			// End success
-			}
+		}
 		// End ajax
 		);
 		is_editor_shown = true;
@@ -297,6 +367,7 @@ $(window).resize(function() {
 var is_editor_shown = false;
 $(document).ready(function(){
 	if(typeof FileActions!=='undefined'){
+	addInviteModal();
 		FileActions.register('text','Edit','',function(filename){
 			showFileEditor($('#dir').val(),filename);
 		});
@@ -327,5 +398,25 @@ $(document).ready(function(){
 			reopenEditor();
 		}
 		$('#notification').fadeOut();
+	});
+
+	// Add comment function
+	$('#submitinvite').on('click', function() {
+		var checkedusers = [];
+		$('.inviteusers:checked').each(function() {
+			checkedusers.push($(this).val());
+		});
+		console.log(checkedusers);
+
+		var jsonString = JSON.stringify(checkedusers);
+		$.ajax({
+			url: OC.filePath('files_texteditor','ajax','sendemail.php'),
+			type: "POST",
+			data: {data : jsonString},
+			success: function(data) {
+				console.log(data);
+			}
+		});
+		$('#closeinvitemodal').click();
 	});
 });

@@ -4,6 +4,6 @@
 	
 	while($row = $result->fetchRow()) {
 		$var = $row['popup_show'];
-		echo 'show modal var: ' . $var;
+		echo $var;
 	}
 ?>

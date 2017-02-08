@@ -510,6 +510,14 @@
 				<length>1</length>
 			</field>
 
+			<field>
+				<name>email</name>
+				<type>text</type>
+				<default></default>
+				<notnull>true</notnull>
+				<length>255</length>
+			</field>
+
 			<index>
 				<name>users_pKey</name>
 				<primary>true</primary>

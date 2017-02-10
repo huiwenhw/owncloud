@@ -37,6 +37,12 @@
 				<notnull>true</notnull>
 				<length>1</length>
 			 </field>
+			 <field>
+				<name>comment_permissions</name>
+				<type>integer</type>
+				<notnull>true</notnull>
+				<length>1</length>
+			 </field>
 		</declaration>
 	</table>
 </database>

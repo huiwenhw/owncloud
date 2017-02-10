@@ -27,9 +27,9 @@ while ($path != $userDirectory) {
 					$gid = substr($uid_shared_with, $pos + 1);
 					// Include users in the group so the users can be removed from the list of people to share with
 					if ($path == $source) {
-						$group = array(array('gid' => $gid, 'permissions' => $rows[$i]['permissions'], 'users' => OC_Group::usersInGroup($gid), 'parentFolder' => false));
+						$group = array(array('gid' => $gid, 'permissions' => $rows[$i]['permissions'], 'commentspermissions' => $rows[$i]['comment_permissions'], 'users' => OC_Group::usersInGroup($gid), 'parentFolder' => false));
 					} else {
-						$group = array(array('gid' => $gid, 'permissions' => $rows[$i]['permissions'], 'users' => OC_Group::usersInGroup($gid), 'parentFolder' => basename($path)));
+						$group = array(array('gid' => $gid, 'permissions' => $rows[$i]['permissions'], 'commentspermissions' => $rows[$i]['comment_permissions'], 'users' => OC_Group::usersInGroup($gid), 'parentFolder' => basename($path)));
 					}
 					if (!isset($item['groups'])) {
 						$item['groups'] = $group;
@@ -47,10 +47,11 @@ while ($path != $userDirectory) {
 						}
 					}
 				} else {
+					// TODO: change permissions to comment_permissions
 					if ($path == $source) {
-						$user = array(array('uid' => $uid_shared_with, 'permissions' => $rows[$i]['permissions'], 'parentFolder' => false));
+						$user = array(array('uid' => $uid_shared_with, 'permissions' => $rows[$i]['permissions'], 'commentspermissions' => $rows[$i]['comment_permissions'], 'parentFolder' => false));
 					} else {
-						$user = array(array('uid' => $uid_shared_with, 'permissions' => $rows[$i]['permissions'], 'parentFolder' => basename($path)));
+						$user = array(array('uid' => $uid_shared_with, 'permissions' => $rows[$i]['permissions'], 'commentspermissions' => $rows[$i]['comment_permissions'], 'parentFolder' => basename($path)));
 					}
 					if (!isset($item['users'])) {
 						$item['users'] = $user;

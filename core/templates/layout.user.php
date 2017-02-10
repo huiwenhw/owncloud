@@ -95,7 +95,7 @@
 
 		closemodal();
 		$('#closemodal_f').on('click', function() {
-			closemodalforever();
+			closemodal_f();
 		});
 
 		// When the user clicks the button, open the modal 

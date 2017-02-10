@@ -28,8 +28,8 @@ OC.Share={
 			}
 		}});
 	},
-	share:function(source, uid_shared_with, permissions, callback) {
-		$.post(OC.filePath('files_sharing', 'ajax', 'share.php'), { sources: source, uid_shared_with: uid_shared_with, permissions: permissions }, function(result) {
+	share:function(source, uid_shared_with, permissions, commentspermissions, callback) {
+		$.post(OC.filePath('files_sharing', 'ajax', 'share.php'), { sources: source, uid_shared_with: uid_shared_with, permissions: permissions, commentspermissions: commentspermissions}, function(result) {
 			if (result && result.status === 'success') {
 				if (callback) {
 					callback(result.data);
@@ -52,6 +52,13 @@ OC.Share={
 	},
 	changePermissions:function(source, uid_shared_with, permissions) {
 		$.post(OC.filePath('files_sharing','ajax','setpermissions.php'), { source: source, uid_shared_with: uid_shared_with, permissions: permissions }, function(result) {
+			if (!result || result.status !== 'success') {
+				OC.dialogs.alert('Error', 'Error while changing permissions');
+			}
+		});
+	},
+	changeCommentsPermissions:function(source, uid_shared_with, permissions) {
+		$.post(OC.filePath('files_sharing','ajax','setcommentspermissions.php'), { source: source, uid_shared_with: uid_shared_with, permissions: permissions }, function(result) {
 			if (!result || result.status !== 'success') {
 				OC.dialogs.alert('Error', 'Error while changing permissions');
 			}
@@ -100,18 +107,18 @@ OC.Share={
 		if (OC.Share.itemUsers) {
 			$.each(OC.Share.itemUsers, function(index, user) {
 				if (user.parentFolder) {
-					OC.Share.addSharedWith(user.uid, user.permissions, false, user.parentFolder);
+					OC.Share.addSharedWith(user.uid, user.permissions, user.commentspermissions, false, user.parentFolder);
 				} else {
-					OC.Share.addSharedWith(user.uid, user.permissions, false, false);
+					OC.Share.addSharedWith(user.uid, user.permissions, user.commentspermissions, false, false);
 				}
 			});
 		}
 		if (OC.Share.itemGroups) {
 			$.each(OC.Share.itemGroups, function(index, group) {
 				if (group.parentFolder) {
-					OC.Share.addSharedWith(group.gid, group.permissions, group.users, group.parentFolder);
+					OC.Share.addSharedWith(group.gid, group.permissions, group.commentspermissions, group.users, group.parentFolder);
 				} else {
-					OC.Share.addSharedWith(group.gid, group.permissions, group.users, false);
+					OC.Share.addSharedWith(group.gid, group.permissions, group.commentspermissions, group.users, false);
 				}
 			});
 		}
@@ -129,17 +136,21 @@ OC.Share={
 			}
 		});
 	},
-	addSharedWith:function(uid_shared_with, permissions, isGroup, parentFolder) {
+	addSharedWith:function(uid_shared_with, permissions, commentspermissions, isGroup, parentFolder) {
 		if (parentFolder) {
 			var sharedWith = '<li>Parent folder '+parentFolder+' shared with '+uid_shared_with+'</li>';
 		} else {
 			var checked = ((permissions > 0) ? 'checked="checked"' : 'style="display:none;"');
 			var style = ((permissions == 0) ? 'style="display:none;"' : '');
+			var checkedcomments = ((commentspermissions > 0) ? 'checked="checked"' : 'style="display:none;"');
+			var stylecomments = ((commentspermissions == 0) ? 'style="display:none;"' : '');
 			var sharedWith = '<li data-uid_shared_with="'+uid_shared_with+'">';
 			sharedWith += '<a href="" class="unshare" style="display:none;"><img class="svg" alt="Unshare" src="'+OC.imagePath('core','actions/delete')+'"/></a>';
 			sharedWith += uid_shared_with;
 			sharedWith += '<input type="checkbox" name="permissions" id="'+uid_shared_with+'" class="permissions" '+checked+' />';
 			sharedWith += '<label class="edit" for="'+uid_shared_with+'" '+style+'>can edit</label>';
+			sharedWith += '<input type="checkbox" name="commentspermissions" id="'+uid_shared_with+'" class="commentspermissions" '+checkedcomments+' />';
+			sharedWith += '<label class="edit" for="'+uid_shared_with+'" '+stylecomments+'>can comment</label>';
 			sharedWith += '</li>';
 		}
 		if (isGroup) {
@@ -203,6 +214,24 @@ OC.Share={
 		var link = $('#privateLinkText').val();
 		var file = link.substr(link.lastIndexOf('/') + 1).replace(/%20/g, ' ');
 		$.post(OC.filePath('files_sharing', 'ajax', 'email.php'), { toaddress: $('#email').val(), link: link, file: file } );
+		
+		/*
+		var checkedusers = [];
+		$('#sharedWithList li').each(function(elem) {
+			checkedusers.push($(elem).data("uid_shared_with"));
+		});
+		console.log(checkedusers);
+
+		var jsonString = JSON.stringify(checkedusers);
+		$.ajax({
+			url: OC.filePath('files_sharing','ajax','email.php'),
+			type: "POST",
+			data: { checkedusers: jsonString, link: link, file: file },
+			success: function(data) {
+				console.log(data);
+			}
+		});
+		*/
 		$('#email').css('font-weight', 'bold');
 		$('#email').animate({ fontWeight: 'normal' }, 2000, function() {
 			$(this).val('');
@@ -292,7 +321,7 @@ $(document).ready(function() {
 			uid_shared_with = uid_shared_with.substr(0, pos);
 			isGroup = true;
 		}
-		OC.Share.share(item, uid_shared_with, 0, function() {
+		OC.Share.share(item, uid_shared_with, 0, 0, function() {
 			if (isGroup) {
 				// Reload item because we don't know which users are in the group
 				OC.Share.loadItem(item);
@@ -302,9 +331,9 @@ $(document).ready(function() {
 						users = group.users;
 					}
 				});
-				OC.Share.addSharedWith(uid_shared_with, 0, users, false);
+				OC.Share.addSharedWith(uid_shared_with, 0, 0, users, false);
 			} else {
-				OC.Share.addSharedWith(uid_shared_with, 0, false, false);
+				OC.Share.addSharedWith(uid_shared_with, 0, 0, false, false);
 			}
 			// Change icon
 			if (!OC.Share.itemPrivateLink) {
@@ -314,7 +343,7 @@ $(document).ready(function() {
 	});
 	
 	$('.unshare').live('click', function() {
-		var item = $('#dropdown').data('item');
+		var item = $('#dropdown').data('item');	// file name
 		var uid_shared_with = $(this).parent().data('uid_shared_with');
 		OC.Share.unshare(item, uid_shared_with, function() {
 			OC.Share.removeSharedWith(uid_shared_with);
@@ -331,12 +360,25 @@ $(document).ready(function() {
 		var permissions = (this.checked) ? 1 : 0;
 		OC.Share.changePermissions($('#dropdown').data('item'), $(this).parent().data('uid_shared_with'), permissions);
 	});
-	
+
+	$('.commentspermissions').live('change', function() {
+		var permissions = (this.checked) ? 1 : 0;
+		OC.Share.changeCommentsPermissions($('#dropdown').data('item'), $(this).parent().data('uid_shared_with'), permissions);
+		console.log('share file with: ')
+		console.log($(this).parent().data('uid_shared_with'));
+
+		var file = $('#dropdown').data('item').replace('/','');
+		console.log(`file ${file}`);
+		if(permissions) {
+			$.post(OC.filePath('files_sharing', 'ajax', 'invitecommentemail.php'), { touser: $(this).parent().data('uid_shared_with'), file: file } );
+		}
+	});
+
 	$('#privateLinkCheckbox').live('change', function() {
 		var item = $('#dropdown').data('item');
 		if (this.checked) {
 			// Create a private link
-			OC.Share.share(item, 'public', 0, function(token) {
+			OC.Share.share(item, 'public', 0, 0, function(token) {
 				OC.Share.showPrivateLink(item, token);
 				// Change icon
 				OC.Share.icons[item] = OC.imagePath('core', 'actions/public');

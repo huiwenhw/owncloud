@@ -38,16 +38,16 @@ class OC_Share {
 	 * @param $uid_shared_with The user or group to share the item with
 	 * @param $permissions The permissions, use the constants WRITE and DELETE
 	 */
-	public function __construct($source, $uid_shared_with, $permissions) {
+	public function __construct($source, $uid_shared_with, $permissions, $commentspermissions) {
 		$uid_owner = OCP\USER::getUser();
-		$query = OCP\DB::prepare("INSERT INTO *PREFIX*sharing VALUES(?,?,?,?,?)");
+		$query = OCP\DB::prepare("INSERT INTO *PREFIX*sharing VALUES(?,?,?,?,?,?)");
 		// Check if this is a reshare and use the original source
 		if ($result = OC_Share::getSource($source)) {
 			$source = $result;
 		}
 		if ($uid_shared_with == self::PUBLICLINK) {
 			$token = sha1("$uid_shared_with-$source");
-			$query->execute(array($uid_owner, self::PUBLICLINK, $source, $token, $permissions));
+			$query->execute(array($uid_owner, self::PUBLICLINK, $source, $token, $permissions, $commentspermissions));
 			$this->token = $token;
 		} else {
 			if (OC_Group::groupExists($uid_shared_with)) {
@@ -107,7 +107,7 @@ class OC_Share {
 				if (isset($gid)) {
 					$uid = $uid."@".$gid;
 				}
-				$query->execute(array($uid_owner, $uid, $source, $target, $permissions));
+				$query->execute(array($uid_owner, $uid, $source, $target, $permissions, $commentspermissions));
 				// Update mtime of shared folder to invoke a file cache rescan
 				$rootView=new OC_FilesystemView('/');
 				if (!$rootView->is_dir($sharedFolder)) {
@@ -225,7 +225,7 @@ class OC_Share {
 	 */
 	public static function getMySharedItem($source) {
 		$source = self::cleanPath($source);
-		$query = OCP\DB::prepare("SELECT uid_shared_with, permissions FROM *PREFIX*sharing WHERE source = ? AND uid_owner = ?");
+		$query = OCP\DB::prepare("SELECT uid_shared_with, permissions, comment_permissions FROM *PREFIX*sharing WHERE source = ? AND uid_owner = ?");
 		$result = $query->execute(array($source, OCP\USER::getUser()))->fetchAll();
 		if (count($result) > 0) {
 			return $result;
@@ -400,6 +400,12 @@ class OC_Share {
 	public static function setPermissions($source, $uid_shared_with, $permissions) {
 		$source = self::cleanPath($source);
 		$query = OCP\DB::prepare("UPDATE *PREFIX*sharing SET permissions = ? WHERE SUBSTR(source, 1, ?) = ? AND uid_owner = ? AND uid_shared_with ".self::getUsersAndGroups($uid_shared_with));
+		$query->execute(array($permissions, strlen($source), $source, OCP\USER::getUser()));
+	}
+
+	public static function setCommentsPermissions($source, $uid_shared_with, $permissions) {
+		$source = self::cleanPath($source);
+		$query = OCP\DB::prepare("UPDATE *PREFIX*sharing SET comment_permissions = ? WHERE SUBSTR(source, 1, ?) = ? AND uid_owner = ? AND uid_shared_with ".self::getUsersAndGroups($uid_shared_with));
 		$query->execute(array($permissions, strlen($source), $source, OCP\USER::getUser()));
 	}
 

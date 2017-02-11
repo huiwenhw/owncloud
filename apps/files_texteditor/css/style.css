@@ -1,3 +1,17 @@
+#comment_container {
+	position: absolute;
+	z-index: 10;
+	right: 10px;
+	bottom: 10px;
+	border: 1px solid black;
+	padding: 5px;
+}
+
+#comments {
+	overflow: scroll;
+	height: 50vh;
+}
+
 #editor{
 	position: fixed;
 	display: block;

@@ -263,6 +263,16 @@ class OC_Filestorage_Shared extends OC_Filestorage {
 		}
 	}
 	
+	public function is_commentable($path) {
+		if($path == "" || $path == "/"){
+			return false;
+		}elseif (OC_Share::getPermissions($this->datadir.$path) & OC_Share::WRITE) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	public function file_exists($path) {
 		if ($path == "" || $path == "/") {
 			return true;
@@ -317,6 +327,11 @@ class OC_Filestorage_Shared extends OC_Filestorage {
 		}
 	}
 	
+	public function file_get_source($path) {
+		$source = $this->getSource($path);
+		return $source;
+	}
+
 	public function file_get_contents($path) {
 		$source = $this->getSource($path);
 		if ($source) {

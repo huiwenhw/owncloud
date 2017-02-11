@@ -99,7 +99,7 @@ function showControls(filename,writeperms){
 function bindControlEvents(){
 	$("#editor_save").die('click',doFileSave).live('click',doFileSave);
 	$('#editor_close').die('click',hideFileEditor).live('click',hideFileEditor);
-	$('#editor_comment').die('click',showInviteModal).live('click',showInviteModal);
+	//$('#editor_comment').die('click',showInviteModal).live('click',showInviteModal);
 	$('#editorsearchval').die('keyup', doSearch).live('keyup', doSearch);
 	$('#clearsearchbtn').die('click', resetSearch).live('click', resetSearch);
 	$('#nextsearchbtn').die('click', nextSearchResult).live('click', nextSearchResult);
@@ -296,6 +296,75 @@ function showFileEditor(dir,filename){
 							}
 						});
 					});
+
+					console.log(`dir: ${dir}, path: ${dir}/${filename}`);
+					// Starting comment section 
+					var addcomment = "";
+					addcomment += '<div id="comment_container">';
+					addcomment += '<div id="comments">';
+
+					// Adding comments into comment container 
+					$.ajax({
+						url: OC.filePath('files_texteditor','ajax','getcomments.php'),
+						type: "POST",
+						data: {file:filename},
+						success: function(jsondata) {
+							var data = JSON.parse(jsondata);
+							console.log(`data ${data}`);
+							for(var i in data) {
+								console.log(`data[${i}]: ${data[i]} data[${i}][0]: ${data[i][0]} `);
+								var addcomment = "";
+								addcomment += '<div class="comment">';
+								addcomment += '<div class="comment_uid">User: ';
+								addcomment += data[i][0];
+								//addcomment += data[i].split(',')[0];
+								addcomment += '</div>';		// for div class=comment_uid
+								addcomment += '<div class="comment_text">';
+								addcomment += data[i][1];
+								//addcomment += data[i].split(',')[1];
+								addcomment += '</div>';		// for div class=comment_text
+								addcomment += '<hr>';
+								addcomment += '</div>';		// for div class=comment 
+								$('#comments').append(addcomment);
+							}
+						}
+					});
+					/*
+					$.post(OC.filePath('files_sharing','ajax','get_comments.php'), { path:filename },function(data) {
+						addcomment += '<div class="comment">';
+						addcomment += '<div class="comment_uid">';
+						addcomment += "User: uid";
+						addcomment += '</div>';		// for div class=comment_uid
+						addcomment += '<div class="comment_text">';
+						addcomment += "Comment comment comment";
+						addcomment += '</div>';		// for div class=comment_text
+						addcomment += '</div>';		// for div class=comment 
+						addcomment += '<hr>';
+					});
+					*/
+
+					/*
+					addcomment += '<div class="comment">';
+					addcomment += '<div class="comment_uid">';
+					addcomment += "User: uid";
+					addcomment += '</div>';		// for div class=comment_uid
+					addcomment += '<div class="comment_text">';
+					addcomment += "Comment comment comment";
+					addcomment += '</div>';		// for div class=comment_text
+					addcomment += '</div>';		// for div class=comment 
+					addcomment += '<hr>';
+					*/
+
+					addcomment += '</div>';		// for div id=comments, to append comment  
+					// Textbox for users to input comments 
+					addcomment += '<input id="textbox_comment" type="textarea" placeholder="Comments go here! ..."></input>';
+					addcomment += '<input id="saveusercomment" type="submit" value="Comment" />';
+					addcomment += '</div>';		// for div id=comment_container 
+
+					$('#content').append(addcomment);
+					console.log(filename);
+					savecomment(dir, filename);
+
 				} else {
 					// Failed to get the file.
 					OC.dialogs.alert(result.data.message, t('files_texteditor','An error occurred!'));
@@ -304,8 +373,8 @@ function showFileEditor(dir,filename){
 		}
 		// End ajax
 		);
-		is_editor_shown = true;
-	}
+is_editor_shown = true;
+}
 }
 
 // Fades out the editor.
@@ -345,6 +414,7 @@ function hideFileEditor(){
 		});
 		is_editor_shown = false;
 	}
+	$('#comment_container').remove();
 }
 
 // Reopens the last document
@@ -360,6 +430,35 @@ function reopenEditor(){
 	is_editor_shown  = true;
 }
 
+function savecomment(dir, filename) {
+	$('#saveusercomment').on('click', function() {
+		var content = $('#textbox_comment').val();
+		var user = '';
+		$.ajax({
+			url: OC.filePath('files_texteditor','ajax','savecomment.php'),
+			type: "POST",
+			data: {dir:dir, file:filename, content:content},
+			success: function(data) {
+				user = data;
+				console.log(`user ${user}`);
+				var addcomment = '';
+				addcomment += '<div class="comment">';
+				addcomment += '<div class="comment_uid">User: ';
+				addcomment += user;
+				addcomment += '</div>';		// for div class=comment_uid
+				addcomment += '<div class="comment_text">';
+				addcomment += content;
+				addcomment += '</div>';		// for div class=comment_text
+				addcomment += '<hr>';
+				addcomment += '</div>';		// for div class=comment 
+
+				$('#comments').prepend(addcomment);
+				$('#textbox_comment').val('');
+			}
+		});
+	});
+}
+
 // resizes the editor window
 $(window).resize(function() {
 	setEditorSize();
@@ -367,7 +466,7 @@ $(window).resize(function() {
 var is_editor_shown = false;
 $(document).ready(function(){
 	if(typeof FileActions!=='undefined'){
-	addInviteModal();
+		//addInviteModal();
 		FileActions.register('text','Edit','',function(filename){
 			showFileEditor($('#dir').val(),filename);
 		});
@@ -389,6 +488,8 @@ $(document).ready(function(){
 			showFileEditor(dir,file);
 		});
 	};
+	savecomment();
+	$('#saveusercomment').click();
 	// Binds the file save and close editor events, and gotoline button
 	bindControlEvents();
 	$('#editor').remove();
@@ -400,6 +501,7 @@ $(document).ready(function(){
 		$('#notification').fadeOut();
 	});
 
+	/*
 	// Add comment function
 	$('#submitinvite').on('click', function() {
 		var checkedusers = [];
@@ -419,4 +521,5 @@ $(document).ready(function(){
 		});
 		$('#closeinvitemodal').click();
 	});
+	*/
 });

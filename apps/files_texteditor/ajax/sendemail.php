@@ -1,4 +1,6 @@
 <?php
+	// Not using anymore 
+
 	$data = json_decode(stripslashes($_POST['data']));
 
 	foreach($data as $user){

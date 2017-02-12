@@ -12,6 +12,19 @@
 	height: 50vh;
 }
 
+.comment_uid {
+	padding-top: 3px;
+}
+
+.comment_text {
+	clear: both;
+}
+
+.deletecomment {
+	float: right;
+	margin: 0px;
+}
+
 #editor{
 	position: fixed;
 	display: block;

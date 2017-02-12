@@ -350,6 +350,8 @@ class OC_Share {
 		}
 	}
 
+	//public static function getSource()
+
 	/**
 	 * Get the token for a public link
 	 * @return The token of the public link, a sha1 hash

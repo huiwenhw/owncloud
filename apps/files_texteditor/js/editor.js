@@ -353,6 +353,7 @@ is_editor_shown = true;
 
 function checkcommentpermissions(filename) {
 	var textarea = $('#textbox_comment');
+	textarea.attr('readonly', 'false');
 	$.ajax({
 		url: OC.filePath('files_texteditor', 'ajax', 'usercommentpermissions.php'),
 		type: 'POST',
@@ -361,10 +362,10 @@ function checkcommentpermissions(filename) {
 			var data = JSON.parse(jsondata);
 			console.log(`check user comment perms: ${data['cancomment']}`);
 			if(data['cancomment'] == 'success') {
-				textarea.attr('readonly', 'false');
+				$('#textbox_comment').removeAttr('readonly');
 			} else {
 				console.log('user cannot comment');
-				textarea.attr('readonly', 'true');
+				$('#textbox_comment').attr('readonly', 'true');
 			}
 		} 
 	});

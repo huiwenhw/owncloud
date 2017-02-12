@@ -9,7 +9,7 @@
 
 #comments {
 	overflow: scroll;
-	height: 50vh;
+	max-height: 50vh;
 }
 
 .comment_uid {

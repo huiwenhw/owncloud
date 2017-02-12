@@ -7,7 +7,7 @@
 	<?php foreach($_['cssfiles'] as $cssfile): ?>
 		<link rel="stylesheet" href="<?php echo $cssfile; ?>" type="text/css" media="screen" />
 	<?php endforeach; ?>
-		<script type="text/javascript">
+	<script type="text/javascript">
 		var oc_webroot = '<?php echo OC::$WEBROOT; ?>';
 		var oc_appswebroot = '<?php echo OC::$APPSWEBROOT; ?>';
 		var oc_current_user = '<?php echo OC_User::getUser() ?>';
@@ -84,43 +84,48 @@
 	</div>
 
 	<script type="text/javascript">
-	var modal = document.getElementById('introModal');
-	var checkli = $('#apps li:first')[0].textContent.replace(/\s/g, '');
+		var modal = document.getElementById('introModal');
+		var checkli = $('#apps li:first')[0].textContent.replace(/\s/g, '');
 
-	$(document).ready(function() {
-		showmodal();
-		$("#needassist").on( "click", function() {
-			showguide(); 
-		});
+		$(document).ready(function() {
+			showmodal();
+			$("#needassist").on( "click", function() {
+				showguide(); 
+			});
 
-		closemodal();
-		$('#closemodal_f').on('click', function() {
-			closemodal_f();
-		});
+			closemodal();
+			$('#closemodal_f').on('click', function() {
+				closemodal_f();
+			});
 
-		// When the user clicks the button, open the modal 
-		$('#guidebtn').on('click', function() {
-			console.log('guide');
-			$("#needassist").click();
-		});
-	});
-
-	function showmodal() {
-		$.ajax({
-			url: OC.filePath('files','ajax','showpopup.php'),
-			data: "",
-			success: function(data) {
-				console.log(data);
-				if(checkli == "Files" && $('#apps li a:first').hasClass('active') && data == 1) {
-					modal.style.display = "block";
+			// When the user clicks the button, open the modal 
+			$('#guidebtn').on('click', function() {
+				if(checkli == "Files" && $('#apps li a:first').hasClass('active') && $('#dir').val() != '/Shared') {
+					console.log('guide');
+					$("#needassist").click();
+				} else {
+					console.log('guide, not in main page.');
+					alert('Please go the main page to if you want a guide!');
 				}
-			}
+			});
 		});
-	}
 
-	function showguide() {
+		function showmodal() {
+			$.ajax({
+				url: OC.filePath('files','ajax','showpopup.php'),
+				data: "",
+				success: function(data) {
+					console.log(data);
+					if(checkli == "Files" && $('#apps li a:first').hasClass('active') && data == 1 && $('#dir').val() != '/Shared') {
+						modal.style.display = "block";
+					}
+				}
+			});
+		}
+
+		function showguide() {
 		// Enabling fileactions on hover & adding attributes for introjs 
-		$('#fileList tr').mouseover();
+		$('#fileList tr:last').mouseover();
 		$('#sharebtn').attr("data-step", "3");
 		$('#sharebtn').attr("data-intro", "Share a file by hovering over the file! More actions available.");
 		$('#sharebtn').attr("data-position", "bottom-middle-aligned");
@@ -133,11 +138,11 @@
 		intro.setOption('showProgress', true).start();
 		intro.oncomplete(function() {
 			console.log('complete');
-			$('#fileList tr').mouseleave();
+			$('#fileList tr:last').mouseleave();
 		});
 		intro.onexit(function() {
 			console.log('exit');
-			$('#fileList tr').mouseleave();
+			$('#fileList tr:last').mouseleave();
 		});
 	}
 

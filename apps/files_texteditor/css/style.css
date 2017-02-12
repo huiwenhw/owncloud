@@ -5,6 +5,7 @@
 	bottom: 10px;
 	border: 1px solid black;
 	padding: 5px;
+	max-width: 300px;
 }
 
 #comments {
@@ -18,6 +19,7 @@
 
 .comment_text {
 	clear: both;
+	width: 90%;
 }
 
 .deletecomment {

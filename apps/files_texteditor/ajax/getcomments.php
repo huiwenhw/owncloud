@@ -14,7 +14,7 @@
 	}
 
 	$data = array();
-	$stmt = OCP\DB::prepare('SELECT uid,comment_text,commentid FROM oc_comments WHERE file = ?');
+	$stmt = OCP\DB::prepare('SELECT uid,comment_text,commentid FROM oc_comments WHERE file = ? ORDER BY commentid DESC');
 	$result = $stmt->execute(array($source));
 	while($row = $result->fetchRow()) {
 		$user = $row['uid'];

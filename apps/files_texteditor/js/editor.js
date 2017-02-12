@@ -89,7 +89,8 @@ function showControls(filename,writeperms){
 	if(writeperms=="true"){
 		editorbarhtml += '<button id="editor_save">'+t('files_texteditor','Save')+'</button><div class="separator"></div>';
 	}
-	editorbarhtml += '<label for="editorseachval">Search:</label><input type="text" name="editorsearchval" id="editorsearchval"><div class="separator"></div><button id="editor_close">'+t('files_texteditor','Close')+'</button><button id="editor_comment">'+t('files_texteditor','Invite to Comment')+'</button></div>';
+	editorbarhtml += '<label for="editorseachval">Search:</label><input type="text" name="editorsearchval" id="editorsearchval"><div class="separator"></div><button id="editor_close">'+t('files_texteditor','Close')+'</button></div>';
+	//editorbarhtml += '<label for="editorseachval">Search:</label><input type="text" name="editorsearchval" id="editorsearchval"><div class="separator"></div><button id="editor_close">'+t('files_texteditor','Close')+'</button><button id="editor_comment">'+t('files_texteditor','Invite to Comment')+'</button></div>';
 	// Change breadcrumb classes
 	$('#controls .last').removeClass('last');
 	$('#controls').append(editorbarhtml);
@@ -334,8 +335,10 @@ function showFileEditor(dir,filename){
 
 					addcomment += '</div>';		// for div id=comments, to append comment  
 					// Textbox for users to input comments 
+					addcomment += '<div id="textbox">';
 					addcomment += '<input id="textbox_comment" type="textarea" placeholder="Comments go here! ..."></input>';
 					addcomment += '<input id="saveusercomment" type="submit" value="Comment" />';
+					addcomment += '</div>'; 	// for div id=textbox
 					addcomment += '</div>';		// for div id=comment_container 
 					$('#content').append(addcomment);
 					checkcommentpermissions(filename);
@@ -347,8 +350,8 @@ function showFileEditor(dir,filename){
 		}
 		// End ajax
 		);
-is_editor_shown = true;
-}
+		is_editor_shown = true;
+	}
 }
 
 function checkcommentpermissions(filename) {
@@ -372,6 +375,12 @@ function checkcommentpermissions(filename) {
 }
 
 function savecomment(dir, filename) {
+	$('#textbox_comment').keyup(function(event) {
+		if(event.keyCode == 13) {
+			$('#saveusercomment').click();
+		}
+	});
+
 	$('#saveusercomment').on('click', function() {
 		var content = $('#textbox_comment').val();
 		var user = '';
@@ -396,34 +405,31 @@ function savecomment(dir, filename) {
 
 				$('#comments').prepend(addcomment);
 				$('#textbox_comment').val('');
-				//deletecomment(filename);
 			}
 		});
 	});
 }
 
 function deletecomment(obj) {
-	//$('.deletecomment').on('click', function() {
-		var commentid = $(obj).attr('data-id');
-		var commentparent = $(obj).parent();
-		console.log($(obj).attr('data-id'));
-		console.log($(obj).parent());
+	var commentid = $(obj).attr('data-id');
+	var commentparent = $(obj).parent();
+	console.log($(obj).attr('data-id'));
+	console.log($(obj).parent());
 
-		$.ajax({
-			url: OC.filePath('files_texteditor', 'ajax', 'deletecomment.php'),
-			type: "POST",
-			data: {commentid:commentid},
-			success: function(jsondata) {
-				var data = JSON.parse(jsondata);
-				console.log(`deletecomment: uid ${data['uid']} file_owner ${data['file_owner']} result ${data['result']}`);
-				if(data['result'] == "success") {
-					commentparent.remove();
-				} else {
-					alert('Sorry, you are not allowed to remove this comment!');
-				}
+	$.ajax({
+		url: OC.filePath('files_texteditor', 'ajax', 'deletecomment.php'),
+		type: "POST",
+		data: {commentid:commentid},
+		success: function(jsondata) {
+			var data = JSON.parse(jsondata);
+			console.log(`deletecomment: uid ${data['uid']} file_owner ${data['file_owner']} result ${data['result']}`);
+			if(data['result'] == "success") {
+				$(obj).parent().remove();
+			} else {
+				alert('Sorry, you are not allowed to remove this comment!');
 			}
-		});
-	//});
+		}
+	});
 }
 
 // Fades out the editor.

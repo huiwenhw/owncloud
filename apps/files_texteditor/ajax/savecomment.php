@@ -7,19 +7,28 @@
 	//echo $user;
 
 	$file = $_POST['file'];
-	//$filepath = '/' . $user . '/files/Shared/' . $file;
+	$path = '/'. $user . '/files/' . $file;
+	$fileuser = '';
 
-	// Get file owner 
-	$stmt = OCP\DB::prepare('SELECT uid_owner, source FROM *PREFIX*sharing WHERE target LIKE ?');
-	$result = $stmt->execute(array("%".$file."%"));
+	// If file is not shared 
+	$stmt = OCP\DB::prepare('SELECT user FROM oc_fscache WHERE path = ? AND name = ? LIMIT 1');
+	$result = $stmt->execute(array($path, $file));
 	while($row = $result->fetchRow()) {
-		$owner = $row['uid_owner'];
-		$source = $row['source'];
+		$fileuser = $row['user'];
 	}
 
-	// TODO: timestamp T.T 
-	//$date = new DateTime();
-	//echo $date->getTimestamp();
+	if($fileuser == $user) {	// user's own file & not shared 
+		$source = $path;
+		$owner = $user;
+	} else {
+		// Get file owner 
+		$stmt = OCP\DB::prepare('SELECT uid_owner, source FROM *PREFIX*sharing WHERE target LIKE ?');
+		$result = $stmt->execute(array("%".$file."%"));
+		while($row = $result->fetchRow()) {
+			$owner = $row['uid_owner'];
+			$source = $row['source'];
+		}
+	}
 
 	// Save comment into table 
 	$stmt = OCP\DB::prepare("INSERT into oc_comments (uid, uid_file_owner, comment_text, file) values (?,?,?,?)");

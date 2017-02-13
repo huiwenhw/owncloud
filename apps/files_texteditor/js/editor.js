@@ -298,7 +298,7 @@ function showFileEditor(dir,filename){
 						});
 					});
 
-					//console.log(`dir: ${dir}, path: ${dir}/${filename}`);
+					console.log(`dir: ${dir}, path: ${dir}/${filename}`);
 					// Starting comment section 
 					var addcomment = "";
 					addcomment += '<div id="comment_container">';
@@ -317,7 +317,6 @@ function showFileEditor(dir,filename){
 								var addcomment = "";
 								addcomment += '<div class="comment">';
 								addcomment += '<input data-id="' + data[i]['commentid'] + '"class="deletecomment"  onclick="deletecomment(this)" type="submit" value="&times;"></input>';
-								//addcomment += '<button class="deletecomment">&times;</button>';
 								addcomment += '<div class="comment_uid">User: ';
 								addcomment += data[i]['user'];
 								addcomment += '</div>';		// for div class=comment_uid
@@ -329,7 +328,6 @@ function showFileEditor(dir,filename){
 								$('#comments').append(addcomment);
 							}
 							savecomment(dir, filename);
-							//deletecomment(filename);
 						}
 					});
 
@@ -355,20 +353,19 @@ function showFileEditor(dir,filename){
 }
 
 function checkcommentpermissions(filename) {
-	var textarea = $('#textbox_comment');
-	textarea.attr('readonly', 'false');
 	$.ajax({
 		url: OC.filePath('files_texteditor', 'ajax', 'usercommentpermissions.php'),
 		type: 'POST',
 		data: {file:filename},
 		success: function(jsondata) {
 			var data = JSON.parse(jsondata);
-			console.log(`check user comment perms: ${data['cancomment']}`);
+			console.log(`check user comment perms: ${data['cancomment']} perm: ${data['perm']} ownfileperm: ${data['ownfileperm']}`);
 			if(data['cancomment'] == 'success') {
-				$('#textbox_comment').removeAttr('readonly');
+				//$('#textbox_comment').removeAttr('readonly');
 			} else {
+				$('#textbox').remove();
 				console.log('user cannot comment');
-				$('#textbox_comment').attr('readonly', 'true');
+				//$('#textbox_comment').attr('readonly', 'true');
 			}
 		} 
 	});
@@ -384,36 +381,37 @@ function savecomment(dir, filename) {
 	$('#saveusercomment').on('click', function() {
 		var content = $('#textbox_comment').val();
 		var user = '';
-		$.ajax({
-			url: OC.filePath('files_texteditor','ajax','savecomment.php'),
-			type: "POST",
-			data: {dir:dir, file:filename, content:content},
-			success: function(jsondata) {
-				var data = JSON.parse(jsondata);
-				console.log(`save comment: user ${data['user']} commentid: ${data['commentid']}`);
-				var addcomment = '';
-				addcomment += '<div class="comment">';
-				addcomment += '<input data-id="' + data['commentid'] + '"class="deletecomment" onclick="deletecomment(this)" type="submit" value="&times;"></input>';
-				addcomment += '<div class="comment_uid">User: ';
-				addcomment += data['user'];
-				addcomment += '</div>';		// for div class=comment_uid
-				addcomment += '<div class="comment_text">';
-				addcomment += content;
-				addcomment += '</div>';		// for div class=comment_text
-				addcomment += '<hr>';
-				addcomment += '</div>';		// for div class=comment 
+		if(content != "") {
+			$.ajax({
+				url: OC.filePath('files_texteditor','ajax','savecomment.php'),
+				type: "POST",
+				data: {dir:dir, file:filename, content:content},
+				success: function(jsondata) {
+					var data = JSON.parse(jsondata);
+					console.log(`save comment: user ${data['user']} commentid: ${data['commentid']}`);
+					var addcomment = '';
+					addcomment += '<div class="comment">';
+					addcomment += '<input data-id="' + data['commentid'] + '"class="deletecomment" onclick="deletecomment(this)" type="submit" value="&times;"></input>';
+					addcomment += '<div class="comment_uid">User: ';
+					addcomment += data['user'];
+					addcomment += '</div>';		// for div class=comment_uid
+					addcomment += '<div class="comment_text">';
+					addcomment += content;
+					addcomment += '</div>';		// for div class=comment_text
+					addcomment += '<hr>';
+					addcomment += '</div>';		// for div class=comment 
 
-				$('#comments').prepend(addcomment);
-				$('#textbox_comment').val('');
-			}
-		});
+					$('#comments').prepend(addcomment);
+					$('#textbox_comment').val('');
+				}
+			});
+		}
 	});
 }
 
 function deletecomment(obj) {
 	var commentid = $(obj).attr('data-id');
 	var commentparent = $(obj).parent();
-	console.log($(obj).attr('data-id'));
 	console.log($(obj).parent());
 
 	$.ajax({
@@ -422,7 +420,7 @@ function deletecomment(obj) {
 		data: {commentid:commentid},
 		success: function(jsondata) {
 			var data = JSON.parse(jsondata);
-			console.log(`deletecomment: uid ${data['uid']} file_owner ${data['file_owner']} result ${data['result']}`);
+			console.log(`deletecomment: uid ${data['uid']} file_owner ${data['file_owner']} result ${data['result']} commentid ${commentid}`);
 			if(data['result'] == "success") {
 				$(obj).parent().remove();
 			} else {

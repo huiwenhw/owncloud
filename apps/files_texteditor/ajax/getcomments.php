@@ -5,12 +5,25 @@
 
 	$user = OC_User::getUser();
 	$file = $_POST['file'];
+	$path = '/'. $user . '/files/' . $file;
+	$fileuser = '';
 	//echo $file;
 
-	$stmt = OCP\DB::prepare('SELECT source FROM *PREFIX*sharing WHERE target LIKE ?');
-	$result = $stmt->execute(array("%".$file."%"));
+	// If file is not shared 
+	$stmt = OCP\DB::prepare('SELECT user FROM oc_fscache WHERE path = ? AND name = ? LIMIT 1');
+	$result = $stmt->execute(array($path, $file));
 	while($row = $result->fetchRow()) {
-		$source = $row['source'];
+		$fileuser = $row['user'];
+	}
+
+	if($fileuser == $user) {	// user's own file & not shared 
+		$source = $path;
+	} else {
+		$stmt = OCP\DB::prepare('SELECT source FROM *PREFIX*sharing WHERE target LIKE ?');
+		$result = $stmt->execute(array("%".$file."%"));
+		while($row = $result->fetchRow()) {
+			$source = $row['source'];
+		}
 	}
 
 	$data = array();
@@ -20,7 +33,6 @@
 		$user = $row['uid'];
 		$content = $row['comment_text'];
 		$commentid = $row['commentid'];
-		//array_push($data, array($user, $content));
 		array_push($data, array('user' => $user, 'commentid' => $commentid, 'content' => $content));
 	}
 

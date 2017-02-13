@@ -2,7 +2,7 @@
 	OCP\JSON::checkLoggedIn();
 	// Get file owner & comment owner 
 	$commentid = $_POST['commentid'];
-	$stmt = OCP\DB::prepare('SELECT uid, uid_file_owner FROM oc_comments WHERE commentid = ?');
+	$stmt = OCP\DB::prepare('SELECT uid, uid_file_owner FROM oc_comments WHERE commentid = ? LIMIT 1');
 	$result = $stmt->execute(array($commentid));
 	while($row = $result->fetchRow()) {
 		$uid = $row['uid'];

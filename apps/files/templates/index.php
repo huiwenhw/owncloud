@@ -11,8 +11,8 @@
 					<li style="background-image:url('<?php echo OCP\image_path('core','actions/public.png') ?>')" data-type='web'><p><?php echo $l->t('From url');?></p></li>
 				</ul>
 			</div>
-			<div class="file_upload_wrapper svg" data-step="1" data-intro="Click on the button here to upload a file!">
-				<form data-upload-id='1' class="file_upload_form" action="<?php echo OCP\Util::linkTo('files', 'ajax/upload.php'); ?>" method="post" enctype="multipart/form-data" target="file_upload_target_1">
+			<div class="file_upload_wrapper svg">
+				<form data-upload-id='1' class="file_upload_form"  data-step="1" data-intro="Click on the button here to upload a file!" action="<?php echo OCP\Util::linkTo('files', 'ajax/upload.php'); ?>" method="post" enctype="multipart/form-data" target="file_upload_target_1">
 					<input type="hidden" name="MAX_FILE_SIZE" value="<?php echo $_['uploadMaxFilesize'] ?>" id="max_upload">
 					<input type="hidden" class="max_human_file_size" value="(max <?php echo $_['uploadMaxHumanFilesize']; ?>)">
 					<input type="hidden" name="dir" value="<?php echo htmlentities($_['dir'],ENT_COMPAT,'utf-8') ?>" id="dir">
